@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  redis:
+    image: docker.io/bitnami/redis:7.0
+    restart: always
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_MASTER_NAME=mymaster
+      - REDIS_PASSWORD=password
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/bitnami
+
+  redis-sentinel:
+    image: docker.io/bitnami/redis-sentinel:7.0
+    restart: always
+    environment:
+      - REDIS_MASTER_HOST=redis
+      - REDIS_MASTER_NAME=mymaster
+      - REDIS_PASSWORD=password
+    ports:
+      - '26379:26379'
+    depends_on:
+      - redis
+    volumes:
+      - redis-sentinel-data:/bitnami
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres-admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    environment:
+      REDIS_HOST: 'redis-sentinel'
+      REDIS_PORT: 26379
+      REDIS_MASTER_NAME: mymaster
+      REDIS_PASSWORD: password
+
+      POSTGRES_HOST: 'postgres'
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: postgres-db
+      POSTGRES_USER: postgres-admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - node_modules:/app/node_modules
+    ports:
+      - '3000:3000'
+
+
+volumes:
+  node_modules:
+  redis-data:
+  redis-sentinel-data:
+  postgres_data:
