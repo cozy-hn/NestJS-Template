@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { LoggerModule } from './modules/logger/logger.module';
 import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { RedisModule } from './modules/redis/redis.module';
       }),
     }),
     RedisModule,
+    LoggerModule,
   ],
   controllers: [],
   providers: [],
